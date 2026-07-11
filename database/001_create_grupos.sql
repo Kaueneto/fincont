@@ -1,0 +1,19 @@
+CREATE TABLE grupos (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+
+    codigo VARCHAR(10) NOT NULL UNIQUE,
+
+    descricao VARCHAR(100) NOT NULL,
+
+    icone VARCHAR(50),
+
+    cor VARCHAR(20),
+
+    ordem INTEGER DEFAULT 0,
+
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
