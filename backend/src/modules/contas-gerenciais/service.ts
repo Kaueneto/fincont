@@ -69,6 +69,14 @@ export class ContaGerencialService {
 
     async delete(id: number) {
         await this.findById(id);
+
+        const count = await this.repository.countLancamentosByConta(id);
+        if (count > 0) {
+            throw new Error(
+                `não é possível excluir esta conta pois ela possui ${count} lançamento${count > 1 ? 's' : ''} vinculado${count > 1 ? 's' : ''}. Remova os lançamentos antes de excluir a conta.`
+            );
+        }
+
         return this.repository.delete(id);
     }
 }

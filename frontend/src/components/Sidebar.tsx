@@ -2,7 +2,6 @@ import { useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard,
-  Tags,
   BookOpen,
   ArrowLeftRight,
   RefreshCw,
@@ -23,9 +22,9 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { to: '/dashboard',         icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
-  { to: '/grupos',            icon: <Tags size={18} />,            label: 'Grupos' },
-  { to: '/contas-gerenciais', icon: <BookOpen size={18} />,        label: 'Contas Gerenciais' },
   { to: '/lancamentos',       icon: <ArrowLeftRight size={18} />,  label: 'Lançamentos' },
+
+  { to: '/contas-gerenciais', icon: <BookOpen size={18} />,        label: 'Contas Gerenciais' },
   { to: '/recorrencias',      icon: <RefreshCw size={18} />,       label: 'Recorrências' },
   { to: '/reservas',          icon: <PiggyBank size={18} />,       label: 'Reservas' },
 ]

@@ -104,4 +104,14 @@ export class GrupoRepository {
 
         if (error) throw error;
     }
+
+    async countContasByGrupo(grupoId: number): Promise<number> {
+        const { count, error } = await supabase
+            .from("contas_gerenciais")
+            .select("id", { count: "exact", head: true })
+            .eq("grupo_id", grupoId);
+
+        if (error) throw error;
+        return count ?? 0;
+    }
 }

@@ -61,6 +61,14 @@ export class GrupoService {
 
     async delete(id: number) {
         await this.findById(id);
+
+        const count = await this.repository.countContasByGrupo(id);
+        if (count > 0) {
+            throw new Error(
+                `Não é possível excluir este grupo pois ele possui ${count} conta${count > 1 ? 's' : ''} vinculada${count > 1 ? 's' : ''}. Remova ou mova as contas antes de excluir o grupo.`
+            );
+        }
+
         return this.repository.delete(id);
     }
 }

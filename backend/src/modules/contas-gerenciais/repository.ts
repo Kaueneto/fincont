@@ -98,4 +98,14 @@ export class ContaGerencialRepository {
 
         if (error) throw error;
     }
+
+    async countLancamentosByConta(contaId: number): Promise<number> {
+        const { count, error } = await supabase
+            .from("lancamentos")
+            .select("id", { count: "exact", head: true })
+            .eq("conta_gerencial_id", contaId);
+
+        if (error) throw error;
+        return count ?? 0;
+    }
 }

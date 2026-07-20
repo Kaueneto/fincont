@@ -6,7 +6,7 @@ import Sidebar from './Sidebar'
 const routeLabels: Record<string, string> = {
   '/dashboard':         'Dashboard',
   '/grupos':            'Grupos',
-  '/contas-gerenciais': 'Contas Gerenciais',
+  '/contas-gerenciais': 'Contas e categorias',
   '/lancamentos':       'Lançamentos',
   '/recorrencias':      'Recorrências',
   '/reservas':          'Reservas',
