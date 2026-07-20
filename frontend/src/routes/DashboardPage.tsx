@@ -3,9 +3,12 @@ import {
   ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer, ReferenceLine,
 } from 'recharts'
-import { TrendingUp, TrendingDown, Wallet, ArrowLeftRight, Loader2 } from 'lucide-react'
+import { TrendingUp, TrendingDown, Wallet, ArrowLeftRight, Loader2, Plus } from 'lucide-react'
 import { lancamentosService } from '../services/lancamentos.service'
 import type { Lancamento } from '../services/lancamentos.service'
+import { contasGerenciaisService } from '../services/contasGerenciais.service'
+import type { ContaGerencial } from '../services/contasGerenciais.service'
+import { NovoLancamentoModal } from '../modules/lancamentos/NovoLancamentoModal'
 
 
 function primeiroDiaMes(ref = new Date()) {
@@ -107,6 +110,8 @@ export default function DashboardPage() {
   const [chartData, setChartData]       = useState<ChartPoint[]>([])
   const [chartLoading, setChartLoading] = useState(true)
   const [chartVis, setChartVis]         = useState<ChartVis>('ambos')
+  const [showModal, setShowModal]       = useState(false)
+  const [contas, setContas]             = useState<ContaGerencial[]>([])
 
   const loadPeriodo = useCallback(async () => {
     setLoading(true)
@@ -132,6 +137,7 @@ export default function DashboardPage() {
 
   useEffect(() => { loadPeriodo() }, [loadPeriodo])
   useEffect(() => { loadChart() },   [loadChart])
+  useEffect(() => { contasGerenciaisService.findAll().then(setContas).catch(() => {}) }, [])
 
   const summary: Summary = {
     totalEntradas: lancamentos.filter(l => l.tipo === 'receber').reduce((s, l) => s + l.valor, 0),
@@ -151,13 +157,22 @@ export default function DashboardPage() {
   ]
 
   return (
+    <>
     <div className="flex flex-col gap-6">
 
       {/* header e periodo */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h2 className="text-xl font-semibold text-slate-800">Dashboard</h2>
-          <p className="text-slate-500 text-xs mt-0.5">Visão geral das suas finanças</p>
+        <div className="flex items-center gap-3">
+          <div>
+            <h2 className="text-xl font-semibold text-slate-800">Dashboard</h2>
+            <p className="text-slate-500 text-xs mt-0.5">Visão geral das suas finanças</p>
+          </div>
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 hover:scale-110 transition-colors"
+          >
+            <Plus size={13} />  Novo
+          </button>
         </div>
         <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2">
           <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">Período</span>
@@ -291,5 +306,14 @@ export default function DashboardPage() {
         </div>
       )}
     </div>
+
+      {showModal && (
+        <NovoLancamentoModal
+          contas={contas}
+          onClose={() => setShowModal(false)}
+          onSuccess={() => { setShowModal(false); loadPeriodo(); loadChart() }}
+        />
+      )}
+    </>
   )
 }

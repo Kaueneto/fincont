@@ -4,8 +4,8 @@ import { ChevronDown, Search, Check, Layers } from 'lucide-react'
 export interface SelectOption {
   value: string | number
   label: string
+  sublabel?: string
 }
-
 
 interface SingleProps {
   multi?: false
@@ -23,10 +23,10 @@ type Props = (SingleProps | MultiProps) & {
   options: SelectOption[]
   placeholder?: string
   label?: string
-  width?: number
+  width?: number | string
   dropdownWidth?: number
+  fullWidth?: boolean
 }
-
 
 function triggerLabel(
   multi: boolean | undefined,
@@ -44,26 +44,25 @@ function triggerLabel(
   return `${arr.length} selecionados`
 }
 
-
 export function SearchableSelect(props: Props) {
-  const { options, placeholder = 'Selecione...', label, width = 160, dropdownWidth, multi } = props
+  const { options, placeholder = 'Selecione...', label, width = 160, dropdownWidth, multi, fullWidth } = props
 
-  const [open, setOpen]         = useState(false)
-  const [search, setSearch]     = useState('')
-  const [multiMode, setMultiMode] = useState(false)   // alternado dentro do dropdown
-  const containerRef            = useRef<HTMLDivElement>(null)
-  const searchRef               = useRef<HTMLInputElement>(null)
+  const [open, setOpen]           = useState(false)
+  const [search, setSearch]       = useState('')
+  const [multiMode, setMultiMode] = useState(false)
+  const containerRef              = useRef<HTMLDivElement>(null)
+  const searchRef                 = useRef<HTMLInputElement>(null)
 
   const filtered = search
-    ? options.filter(o => o.label.toLowerCase().includes(search.toLowerCase()))
+    ? options.filter(o =>
+        o.label.toLowerCase().includes(search.toLowerCase()) ||
+        (o.sublabel?.toLowerCase().includes(search.toLowerCase()) ?? false)
+      )
     : options
 
-  const dw = dropdownWidth ?? Math.max(width, 240)
+  const dw = dropdownWidth ?? (fullWidth ? undefined : Math.max(typeof width === 'number' ? width : 160, 240))
 
-  // ----- modo multi interno: quais estão marcados -----
-  const multiValues: (string | number)[] = multi
-    ? (props.value as (string | number)[])
-    : []
+  const multiValues: (string | number)[] = multi ? (props.value as (string | number)[]) : []
 
   function isChecked(val: string | number): boolean {
     if (!multiMode && !multi) return (props.value as string | number) === val
@@ -72,13 +71,11 @@ export function SearchableSelect(props: Props) {
 
   function handleSelect(val: string | number) {
     if (!multiMode && !multi) {
-      // modo simples: seleciona e fecha
       ;(props as SingleProps).onChange(val)
       setOpen(false)
       setSearch('')
       return
     }
-    // modo múltiplo
     const current = multiValues
     const next = current.includes(val)
       ? current.filter(v => v !== val)
@@ -104,7 +101,6 @@ export function SearchableSelect(props: Props) {
     setSearch('')
   }
 
-  // fecha ao clicar fora
   useEffect(() => {
     function handler(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -117,7 +113,6 @@ export function SearchableSelect(props: Props) {
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  // foca busca ao abrir
   useEffect(() => {
     if (open) setTimeout(() => searchRef.current?.focus(), 40)
   }, [open])
@@ -125,14 +120,22 @@ export function SearchableSelect(props: Props) {
   const showMultiBar = multiMode || multi
   const hasSelection = multi
     ? multiValues.length > 0
-    : (props.value !== '' && props.value !== undefined && props.value !== null)
+    : (props.value !== '' && props.value !== undefined && props.value !== null && props.value !== 0)
 
   const tLabel = triggerLabel(multi, multi ? multiValues : (props as SingleProps).value, options, placeholder)
 
+  // trigger mais alto quando fullWidth (usado dentro de formulários)
+  const triggerHeight = fullWidth ? 'h-9' : 'h-7'
+  const triggerText   = fullWidth ? 'text-sm' : 'text-xs'
+
   return (
-    <div className="flex flex-col gap-1 relative" style={{ width }} ref={containerRef}>
+    <div
+      className="flex flex-col gap-1 relative"
+      style={fullWidth ? { width: '100%' } : { width }}
+      ref={containerRef}
+    >
       {label && (
-        <label className="text-[11px] text-slate-700  tracking-wide select-none">
+        <label className="text-[11px] text-slate-700 tracking-wide select-none">
           {label}
         </label>
       )}
@@ -141,13 +144,14 @@ export function SearchableSelect(props: Props) {
         type="button"
         onClick={() => setOpen(v => !v)}
         className={`
-          h-7 px-2.5 flex items-center justify-between gap-1.5 w-full
-          text-xs border rounded-lg outline-none transition-all duration-150 bg-white select-none hover:scale-105
+          ${triggerHeight} px-2.5 flex items-center justify-between gap-1.5 w-full
+          ${triggerText} border rounded-lg outline-none transition-all duration-150 bg-white select-none
+          ${fullWidth ? '' : 'hover:scale-105'}
           ${open
-            ? 'border-blue-400 ring-2 ring-blue-100 text-slate-700'
+            ? 'border-slate-300 ring-2 ring-slate-100 text-slate-700'
             : hasSelection
               ? 'border-blue-300 text-blue-700 bg-blue-50 hover:bg-blue-100'
-              : 'border-slate-200 text-slate-500 hover:border-slate-300 hover:bg-slate-50'
+              : 'border-slate-200 text-slate-400 hover:border-slate-300 hover:bg-slate-50'
           }
         `}
       >
@@ -160,12 +164,11 @@ export function SearchableSelect(props: Props) {
 
       {open && (
         <div
-          className="absolute top-full left-0 mt-1 z-50 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden"
-          style={{ width: dw }}
+          className="absolute top-full left-0 mt-1 z-[200] bg-white border border-slate-200 rounded-xl shadow-xl"
+          style={dw ? { width: dw } : { width: '100%' }}
         >
-
+          {/* barra multi/modo */}
           <div className="flex items-center gap-2 px-3 pt-2.5 pb-2">
-
             {!multi && (
               <button
                 type="button"
@@ -173,10 +176,7 @@ export function SearchableSelect(props: Props) {
                 className={`
                   flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium
                   transition-all duration-150 flex-1
-                  ${multiMode
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                  }
+                  ${multiMode ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}
                 `}
               >
                 <Layers size={11} />
@@ -189,7 +189,6 @@ export function SearchableSelect(props: Props) {
                 Modo: Múltipla Seleção
               </span>
             )}
-     
             {(multiMode || multi) && (
               <button
                 type="button"
@@ -203,7 +202,7 @@ export function SearchableSelect(props: Props) {
 
           <div className="h-px bg-slate-100 mx-3" />
 
-
+          {/* busca */}
           <div className="px-3 py-2">
             <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5">
               <Search size={11} className="text-slate-400 flex-shrink-0" />
@@ -218,8 +217,8 @@ export function SearchableSelect(props: Props) {
             </div>
           </div>
 
-          {/* sel todos / limpar — só no modo multi */}
-          {(showMultiBar) && (
+          {/* sel todos / limpar */}
+          {showMultiBar && (
             <div className="flex items-center justify-between px-4 pb-2">
               <button
                 type="button"
@@ -238,10 +237,9 @@ export function SearchableSelect(props: Props) {
             </div>
           )}
 
-
           <div className="h-px bg-slate-100" />
 
-        <div className="max-h-52 overflow-y-auto py-1">
+          <div className="max-h-56 overflow-y-auto overflow-x-hidden py-1">
             {filtered.length === 0 ? (
               <div className="px-4 py-3 text-xs text-slate-400 text-center">Nenhum resultado</div>
             ) : (
@@ -270,7 +268,12 @@ export function SearchableSelect(props: Props) {
                     `}>
                       {checked && <Check size={10} className="text-white" strokeWidth={3} />}
                     </span>
-                    <span className="truncate">{opt.label}</span>
+                    <span className="flex flex-col min-w-0">
+                      <span className="truncate">{opt.label}</span>
+                      {opt.sublabel && (
+                        <span className="truncate text-[10px] text-slate-400 font-normal">{opt.sublabel}</span>
+                      )}
+                    </span>
                   </button>
                 )
               })

@@ -122,7 +122,7 @@ function NovaContaModal({ grupos, onClose, onSuccess }: ModalProps) {
                 onChange={(e) => setForm({ ...form, grupo_id: Number(e.target.value) })}
                 className={`
                   w-full px-3 py-2.5 rounded-lg border text-sm outline-none
-                  transition-colors bg-white
+                  transition-colors bg-white text-slate-700
                   ${errors.grupo_id
                     ? 'border-red-400 focus:border-red-500'
                     : 'border-slate-200 focus:border-blue-500'

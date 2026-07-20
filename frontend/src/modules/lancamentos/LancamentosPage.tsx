@@ -574,7 +574,7 @@ export default function LancamentosPage() {
             onClick={() => setShowModal(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors hover:scale-105"
           >
-            <Plus size={15} /> Novo Lançamento
+            <Plus size={15} /> Lançamento
           </button>
         </div>
 
