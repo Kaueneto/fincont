@@ -6,6 +6,7 @@ import type { Lancamento, LancamentoFilters } from '../../services/lancamentos.s
 import type { ContaGerencial } from '../../services/contasGerenciais.service'
 import { NovoLancamentoModal } from './NovoLancamentoModal'
 import { SearchableSelect } from '../../components/SearchableSelect'
+import { DatePickerInput } from '../../components/DatePickerInput'
 
 function primeiroDiaMes() {
   const d = new Date()
@@ -99,8 +100,6 @@ interface FiltersProps {
   onClear: () => void
 }
 
-const inp = 'h-7 px-2 text-xs border border-slate-200 rounded-md outline-none focus:border-blue-500 bg-white text-slate-700'
-
 const TIPO_OPTIONS = [
   { value: '',        label: 'Todos' },
   { value: 'pagar',   label: 'A Pagar' },
@@ -140,18 +139,34 @@ function FilterBar({ filters, contas, onChange, onSearch, onClear }: FiltersProp
       <div className="flex flex-col gap-1">
         <label className="text-[11px] text-slate-700  tracking-wide ">Período de vencimento</label>
         <div className="flex items-center gap-1">
-          <input type="date" value={filters.data_vencimento_ini ?? ''} onChange={e => set('data_vencimento_ini', e.target.value || undefined)} className={`${inp} transition-transform hover:scale-105`} />
+          <DatePickerInput
+            value={filters.data_vencimento_ini ?? null}
+            onChange={v => set('data_vencimento_ini', v ?? undefined)}
+            placeholder="Início"
+          />
           <span className="text-[10px] text-slate-400">a</span>
-          <input type="date" value={filters.data_vencimento_fim ?? ''} onChange={e => set('data_vencimento_fim', e.target.value || undefined)} className={`${inp} transition-transform hover:scale-105`} />
+          <DatePickerInput
+            value={filters.data_vencimento_fim ?? null}
+            onChange={v => set('data_vencimento_fim', v ?? undefined)}
+            placeholder="Fim"
+          />
         </div>
       </div>
 
       <div className="flex flex-col gap-1">
         <label className="text-[11px] text-slate-700 tracking-wide">Período de lançamento</label>
         <div className="flex items-center gap-1">
-          <input type="date" value={filters.data_lancamento_ini ?? ''} onChange={e => set('data_lancamento_ini', e.target.value || undefined)} className={`${inp} transition-transform hover:scale-105`} />
+          <DatePickerInput
+            value={filters.data_lancamento_ini ?? null}
+            onChange={v => set('data_lancamento_ini', v ?? undefined)}
+            placeholder="Início"
+          />
           <span className="text-[10px] text-slate-400">a</span>
-          <input type="date" value={filters.data_lancamento_fim ?? ''} onChange={e => set('data_lancamento_fim', e.target.value || undefined)} className={`${inp} transition-transform hover:scale-105`} />
+          <DatePickerInput
+            value={filters.data_lancamento_fim ?? null}
+            onChange={v => set('data_lancamento_fim', v ?? undefined)}
+            placeholder="Fim"
+          />
         </div>
       </div>
 
@@ -472,10 +487,11 @@ function LancamentosTable({ lancamentos, loading, onNovo, selected, onSelectAll,
 interface ActionBarProps {
   count: number
   onBaixa: () => void
+  onExcluir: () => void
   onClear: () => void
 }
 
-function SelectionBar({ count, onBaixa, onClear }: ActionBarProps) {
+function SelectionBar({ count, onBaixa, onExcluir, onClear }: ActionBarProps) {
   if (count === 0) return null
   return (
     <div className="flex items-center gap-3 bg-blue-600 text-white text-sm px-4 py-2.5 rounded-xl">
@@ -487,6 +503,12 @@ function SelectionBar({ count, onBaixa, onClear }: ActionBarProps) {
           className="px-3 py-1 text-xs font-semibold bg-white text-blue-700 rounded-lg hover:bg-blue-50 transition-colors"
         >
           Dar Baixa
+        </button>
+        <button
+          onClick={onExcluir}
+          className="px-3 py-1 text-xs font-semibold bg-rose-500 text-white rounded-lg hover:bg-rose-400 transition-colors"
+        >
+          Excluir
         </button>
         <button
           onClick={onClear}
@@ -566,7 +588,21 @@ export default function LancamentosPage() {
     }
   }
 
-  return (
+  async function handleExcluir() {
+    if (selected.size === 0) return
+    const qtd = selected.size
+    const msg = qtd === 1
+      ? 'Deseja excluir o lançamento selecionado? Esta ação não pode ser desfeita.'
+      : `Deseja excluir os ${qtd} lançamentos selecionados? Esta ação não pode ser desfeita.`
+    if (!window.confirm(msg)) return
+    try {
+      await Promise.all([...selected].map(id => lancamentosService.delete(id)))
+      setSelected(new Set())
+      load()
+    } catch (err: any) {
+      alert('Erro ao excluir: ' + err.message)
+    }
+  }  return (
     <>
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between flex-wrap gap-3">
@@ -591,7 +627,7 @@ export default function LancamentosPage() {
           onSelectOne={handleSelectOne}
         />
 
-        <SelectionBar count={selected.size} onBaixa={handleBaixa} onClear={() => setSelected(new Set())} />
+        <SelectionBar count={selected.size} onBaixa={handleBaixa} onExcluir={handleExcluir} onClear={() => setSelected(new Set())} />
       </div>
 
       {showModal && (

@@ -9,6 +9,8 @@ export interface DatePickerInputProps {
   onChange: (v: string | null) => void
   placeholder?: string
   error?: boolean
+  width?: number | string
+  size?: 'sm' | 'md'         
 }
 
 function isoToBr(iso: string): string {
@@ -37,6 +39,8 @@ export function DatePickerInput({
   onChange,
   placeholder = 'dd/mm/aaaa',
   error,
+  width = 130,
+  size = 'sm',
 }: DatePickerInputProps) {
   const [calOpen, setCalOpen]   = useState(false)
   const [openUp, setOpenUp]     = useState(false)
@@ -90,15 +94,17 @@ export function DatePickerInput({
 
   const hasError = error || inputErr
 
+  const isMd = size === 'md'
+
   return (
-    <div className="relative" ref={ref}>
+    <div className="relative" ref={ref} style={{ width: typeof width === 'number' ? `${width}px` : width }}>
       <div className={`
-        flex items-center bg-slate-50 border rounded-lg px-3 transition-colors
+        ${isMd ? 'h-9' : 'h-7'} flex items-center ${isMd ? 'bg-slate-50' : 'bg-white'} border rounded-lg px-2.5 transition-colors
         ${hasError
           ? 'border-red-300'
           : calOpen
-            ? 'border-slate-300 ring-1 ring-slate-200'
-            : 'border-slate-100 hover:border-slate-200'
+            ? 'border-slate-300 ring-2 ring-slate-100'
+            : 'border-slate-200 hover:border-slate-300'
         }
       `}>
           <input
@@ -108,7 +114,7 @@ export function DatePickerInput({
             onChange={handleInputChange}
             placeholder={placeholder}
             maxLength={10}
-            className="flex-1 bg-transparent outline-none text-sm py-2 text-slate-800 placeholder:text-slate-400 w-0 min-w-0"
+            className={`flex-1 bg-transparent outline-none ${isMd ? 'text-sm text-slate-800' : 'text-xs text-slate-700'} placeholder:text-slate-400 w-0 min-w-0`}
           />
           <button
             type="button"
@@ -116,7 +122,7 @@ export function DatePickerInput({
             onClick={handleOpen}
             className="flex-shrink-0 p-0.5 ml-1 text-slate-400 hover:text-slate-600 transition-colors"
           >
-            <CalendarDays size={14} />
+            <CalendarDays size={isMd ? 14 : 12} />
           </button>
       </div>
 

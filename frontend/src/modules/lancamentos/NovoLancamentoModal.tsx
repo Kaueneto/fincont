@@ -174,6 +174,8 @@ export function NovoLancamentoModal({ contas, onClose, onSuccess }: Props) {
                 <DatePickerInput
                   value={form.data_vencimento}
                   onChange={v => set('data_vencimento', v)}
+                  size="md"
+                  width="100%"
                 />
               </div>
             </div>
@@ -216,6 +218,8 @@ export function NovoLancamentoModal({ contas, onClose, onSuccess }: Props) {
                   value={form.data_lancamento}
                   onChange={v => set('data_lancamento', v)}
                   error={!!errors.data_lancamento}
+                  size="md"
+                  width="100%"
                 />
                 {errors.data_lancamento && (
                   <p className="text-xs text-red-400 flex items-center gap-1">
@@ -242,6 +246,8 @@ export function NovoLancamentoModal({ contas, onClose, onSuccess }: Props) {
                   <DatePickerInput
                     value={form.data_pagamento}
                     onChange={v => set('data_pagamento', v)}
+                    size="md"
+                    width="100%"
                   />
                 </div>
               </div>
